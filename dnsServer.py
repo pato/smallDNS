@@ -17,7 +17,7 @@ class RequestHandler(BaseHTTPRequestHandler):
   def do_GET(self):
     if self.path == "/hosts":
       self.send_response(200)
-      self.send_header('Content-type','text/html')
+      self.send_header('Content-type','text/plain')
       self.end_headers()
       self.wfile.write(strDNS())
       return
