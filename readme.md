@@ -25,4 +25,4 @@ Requirements:
 
 Suggested deployment:
 * Run `dnsServer.py` on server
-* Set up cron job to execute `pingDNS.sh` at a reasonable interval
+* Set up cron job to execute `pingDNS.sh` at a reasonable interval (example in `crontab.entry`)
