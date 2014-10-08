@@ -1,0 +1,2 @@
+# Every five minutes check if IP address changed and if so update the DNS server
+*/5 * * * * ~/smallDNS/pingDNS.sh > ~/smallDNS/.pingLog
