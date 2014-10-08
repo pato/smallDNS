@@ -10,7 +10,7 @@ hostname=$(hostname)
 if [ "$ip" == "$oldip" ]; then
   echo "$(date): no ip change";
 else
-  wget -qO- "http://$server:7979/$ip~$hostname";
+  wget -qO- "http://$server:7979/$ip~$hostname" > /dev/null;
   if [ $? -ne 0 ]; then
     echo "$(date): server is down";
   else
