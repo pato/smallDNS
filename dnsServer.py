@@ -53,6 +53,7 @@ Serialized the current DNS entries as json
 def writeDNS():
   localDNS = open(".localDNS", "w+")
   print(dumps(DNS), file=localDNS)
+  localDNS.close()
 
 """
 Deserialize the DNS entries saved on disk
@@ -64,6 +65,7 @@ def loadDNS():
       return
   global DNS
   DNS = loads(localDNS.read())
+  localDNS.close()
 
 if __name__ == "__main__":
   try:
