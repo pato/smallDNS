@@ -8,9 +8,9 @@ oldip=$(cat ~/oldIP);
 hostname=$(hostname)
 
 if [ "$ip" == "$oldip" ]; then
-  echo "no ip change";
+  echo "$(date): no ip change";
 else
-  echo "ip changed to $ip";
+  echo "$(date): ip changed to $ip";
   wget -qO- "http://$server:7979/$ip~$hostname";
   echo "$ip" > ~/oldIP;
 fi
