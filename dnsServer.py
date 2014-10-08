@@ -21,6 +21,12 @@ class RequestHandler(BaseHTTPRequestHandler):
       self.end_headers()
       self.wfile.write(strDNS())
       return
+    if self.path == "/hostsjson":
+      self.send_response(200)
+      self.send_header('Content-type','text/plain')
+      self.end_headers()
+      self.wfile.write(dumps(DNS))
+      return
     if "/" not in self.path or "~" not in self.path:
       self.send_response(400)
       self.send_header("Content-type","text/html")
@@ -46,6 +52,7 @@ def strDNS():
   for hostname, ipaddr in DNS.iteritems():
     ret += ipaddr + "\t" + hostname + "\n"
   return ret
+
 
 """
 Serialized the current DNS entries as json
