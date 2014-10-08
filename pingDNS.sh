@@ -1,5 +1,5 @@
 #!/bin/bash
-touch ~/oldIP;
+touch .oldIP;
 
 server='localhost'
 
@@ -10,7 +10,11 @@ hostname=$(hostname)
 if [ "$ip" == "$oldip" ]; then
   echo "$(date): no ip change";
 else
-  echo "$(date): ip changed to $ip";
   wget -qO- "http://$server:7979/$ip~$hostname";
-  echo "$ip" > .oldIP;
+  if [ $? -ne 0 ]; then
+    echo "$(date): server is down";
+  else
+    echo "$(date): ip changed to $ip";
+    echo "$ip" > .oldIP;
+  fi
 fi
