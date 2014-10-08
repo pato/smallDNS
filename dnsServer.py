@@ -61,7 +61,7 @@ def loadDNS():
   try:
     localDNS = open(".localDNS", "r")
   except IOError:
-    localDNS = open(".localDNS", "w+")
+      return
   global DNS
   DNS = loads(localDNS.read())
 
