@@ -58,7 +58,10 @@ def writeDNS():
 Deserialize the DNS entries saved on disk
 """
 def loadDNS():
-  localDNS = open(".localDNS", "r")
+  try:
+    localDNS = open(".localDNS", "r")
+  except IOError:
+    localDNS = open(".localDNS", "w+")
   global DNS
   DNS = loads(localDNS.read())
 
