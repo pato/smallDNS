@@ -90,7 +90,7 @@ def loadDNS():
 Check if a host is alive
 """
 def pingHost(ipaddr):
-    response = system("ping -c 1 -w 2 " + ipaddr + "/dev/null")
+    response = system("ping -c 1 -w 2 " + ipaddr + " > /dev/null")
     if response == 0:
       return True
     else:
