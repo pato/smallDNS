@@ -80,7 +80,7 @@ def loadDNS():
 Check if a host is alive
 """
 def pingHost(ipaddr):
-    response = system("ping -c 1 " + ipaddr)
+    response = system("ping -c 1 " + ipaddr + "/dev/null")
     if response == 0:
       return True
     else:
@@ -89,7 +89,7 @@ def pingHost(ipaddr):
 Check which hosts are alive
 """
 def checkHosts():
-  print("Checking which host is alive")
+  print("Checking which hosts are alive")
   for hostname, ipaddr in DNS.iteritems():
     if pingHost(ipaddr):
         print(hostname + " is alive!")
@@ -103,7 +103,6 @@ if __name__ == "__main__":
     print("Loaded previous DNS configuration")
     print(DNS)
     print("Started DNS server on port" , PORT_NUMBER)
-    checkHosts()
     server.serve_forever()
   except KeyboardInterrupt:
     print("^C received, shutting down the web server")
