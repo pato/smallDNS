@@ -76,19 +76,6 @@ def loadDNS():
   DNS = loads(localDNS.read())
   localDNS.close()
 
-if __name__ == "__main__":
-  try:
-    server = HTTPServer(('', PORT_NUMBER), RequestHandler)
-    loadDNS()
-    print("Loaded previous DNS configuration")
-    print(DNS)
-    print("Started DNS server on port" , PORT_NUMBER)
-    checkHosts()
-    server.serve_forever()
-  except KeyboardInterrupt:
-    print("^C received, shutting down the web server")
-    server.socket.close()
-
 """
 Check if a host is alive
 """
@@ -109,3 +96,15 @@ def checkHosts():
     else:
         print(hostname + " is dead!")
 
+if __name__ == "__main__":
+  try:
+    server = HTTPServer(('', PORT_NUMBER), RequestHandler)
+    loadDNS()
+    print("Loaded previous DNS configuration")
+    print(DNS)
+    print("Started DNS server on port" , PORT_NUMBER)
+    checkHosts()
+    server.serve_forever()
+  except KeyboardInterrupt:
+    print("^C received, shutting down the web server")
+    server.socket.close()
