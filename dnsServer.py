@@ -20,7 +20,13 @@ class RequestHandler(BaseHTTPRequestHandler):
       self.send_response(200)
       self.send_header('Content-type','text/plain')
       self.end_headers()
-      self.wfile.write(strDNS())
+      self.wfile.write(strDNS(False))
+      return
+    if self.path == "/hostsalive":
+      self.send_response(200)
+      self.send_header('Content-type','text/plain')
+      self.end_headers()
+      self.wfile.write(strDNS(True))
       return
     if self.path == "/hostsjson":
       self.send_response(200)
@@ -49,10 +55,11 @@ class RequestHandler(BaseHTTPRequestHandler):
 Creates a string representation of the DNS entries
 Useful because you can append it to /etc/hosts
 """
-def strDNS():
+def strDNS(checkAlive):
   ret = ""
   for hostname, ipaddr in DNS.iteritems():
-    ret += ipaddr + "\t" + hostname + "\n"
+    if checkAlive and pingHost(ipaddr):
+      ret += ipaddr + "\t" + hostname + "\n"
   return ret
 
 
