@@ -58,8 +58,11 @@ Useful because you can append it to /etc/hosts
 def strDNS(checkAlive):
   ret = ""
   for hostname, ipaddr in DNS.iteritems():
-    if checkAlive and pingHost(ipaddr):
-      ret += ipaddr + "\t" + hostname + "\n"
+    if checkAlive:
+      if pingHost(ipaddr):
+        ret += ipaddr + "\t" + hostname + "\n"
+    else:
+        ret += ipaddr + "\t" + hostname + "\n"
   return ret
 
 
