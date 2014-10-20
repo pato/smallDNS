@@ -2,6 +2,7 @@
 from __future__ import print_function
 from json import dumps, loads
 from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
+from os import system
 
 PORT_NUMBER = 7979
 DNS = dict()
@@ -82,7 +83,29 @@ if __name__ == "__main__":
     print("Loaded previous DNS configuration")
     print(DNS)
     print("Started DNS server on port" , PORT_NUMBER)
+    checkHosts()
     server.serve_forever()
   except KeyboardInterrupt:
     print("^C received, shutting down the web server")
     server.socket.close()
+
+"""
+Check if a host is alive
+"""
+def pingHost(ipaddr):
+    response = system("ping -c 1 " + ipaddr)
+    if response == 0:
+      return True
+    else:
+      return False
+"""
+Check which hosts are alive
+"""
+def checkHosts():
+  print("Checking which host is alive")
+  for hostname, ipaddr in DNS.iteritems():
+    if pingHost(ipaddr):
+        print(hostname + " is alive!")
+    else:
+        print(hostname + " is dead!")
+
