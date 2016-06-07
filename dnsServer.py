@@ -3,16 +3,30 @@ from __future__ import print_function
 from json import dumps, loads
 from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 from os import system
+from threading import Thread, Event
 
 PORT_NUMBER = 7979
 DNS = dict()
+
+UPDATE_PERIOD = 20 # in seconds
+
+"""
+alive is only stored in memory (as opposed to also being written to disk like DNS)
+because it is refreshed periodically and would be stale by the time the
+program has started again.
+"""
+alive = dict()
+
+
 
 """
 Used for handling requests
 
 Valid Requests:
-  /hosts - print the entries in DNS
-  /ipaddr|name - update the entry for name with new ipaddr
+  /hosts        print the entries in DNS
+  /hostsalive   print the active entries in DNS
+  /hostsjson    print the entries in DNS as JSON
+  /ipaddr~name  update the entry for name with new ipaddr
 """
 class RequestHandler(BaseHTTPRequestHandler):
   def do_GET(self):
@@ -52,6 +66,34 @@ class RequestHandler(BaseHTTPRequestHandler):
     return
 
 """
+Thread object to periodically update alive dict.
+Once started, it runs every UPDATE_PERIOD seconds
+and stops when the event (passed in as an arg)
+is set.
+Based on http://stackoverflow.com/a/12435256
+"""
+class AliveUpdaterThread(Thread):
+    def __init__(self, event):
+        Thread.__init__(self)
+        self.stopped = event
+
+    def run(self):
+        while not self.stopped.wait(UPDATE_PERIOD):
+            print("updating alive")
+            updateAlive()
+
+"""
+Updates alive dict
+Depends on name and IP from DNS
+"""
+def updateAlive():
+    for hostname, ipaddr in DNS.iteritems():
+      if pingHost(ipaddr):
+          alive[hostname] = True
+      else:
+          alive[hostname] = False
+
+"""
 Creates a string representation of the DNS entries
 Useful because you can append it to /etc/hosts
 """
@@ -64,7 +106,6 @@ def strDNS(checkAlive):
     else:
         ret += ipaddr + "\t" + hostname + "\n"
   return ret
-
 
 """
 Serialized the current DNS entries as json
@@ -95,6 +136,7 @@ def pingHost(ipaddr):
       return True
     else:
       return False
+
 """
 Check which hosts are alive
 """
@@ -112,8 +154,17 @@ if __name__ == "__main__":
     loadDNS()
     print("Loaded previous DNS configuration")
     print(DNS)
+
+    #create an event that will signal a stop for AliveUpdaterThread
+    stopFlag = Event()
+
+    #create and start the thread that updates alive
+    thread = AliveUpdaterThread(stopFlag)
+    thread.start()
+
     print("Started DNS server on port" , PORT_NUMBER)
     server.serve_forever()
   except KeyboardInterrupt:
     print("^C received, shutting down the web server")
     server.socket.close()
+    stopFlag.set()
