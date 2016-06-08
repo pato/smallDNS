@@ -78,8 +78,8 @@ class AliveUpdaterThread(Thread):
         self.stopped = event
 
     def run(self):
+        updateAlive() #updates upon thread start
         while not self.stopped.wait(UPDATE_PERIOD):
-            print("updating alive")
             updateAlive()
 
 """
@@ -87,6 +87,7 @@ Updates alive dict
 Depends on name and IP from DNS
 """
 def updateAlive():
+    print("updating alive")
     for hostname, ipaddr in DNS.iteritems():
       if pingHost(ipaddr):
           alive[hostname] = True
@@ -141,9 +142,12 @@ if __name__ == "__main__":
   try:
     server = HTTPServer(('', PORT_NUMBER), RequestHandler)
     loadDNS()
-    updateAlive() # populates alive (because thread first runs updateAlive() UPDATE_PERIOD seconds from start)
     print("Loaded previous DNS configuration")
     print(DNS)
+
+    #initializes alive with False to prevent KeyError
+    for hostname, ipaddr in DNS.iteritems():
+        alive[hostname] = False
 
     stopFlag = Event() #signals a stop for AliveUpdaterThread
 
