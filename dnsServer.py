@@ -155,7 +155,7 @@ if __name__ == "__main__":
     print("Loaded previous DNS configuration")
     print(DNS)
 
-    stopFlag = Event() #signal a stop for AliveUpdaterThread
+    stopFlag = Event() #signals a stop for AliveUpdaterThread
 
     thread = AliveUpdaterThread(stopFlag)
     thread.start()
