@@ -155,10 +155,8 @@ if __name__ == "__main__":
     print("Loaded previous DNS configuration")
     print(DNS)
 
-    #create an event that will signal a stop for AliveUpdaterThread
-    stopFlag = Event()
+    stopFlag = Event() #signal a stop for AliveUpdaterThread
 
-    #create and start the thread that updates alive
     thread = AliveUpdaterThread(stopFlag)
     thread.start()
 
@@ -166,5 +164,5 @@ if __name__ == "__main__":
     server.serve_forever()
   except KeyboardInterrupt:
     print("^C received, shutting down the web server")
-    server.socket.close()
     stopFlag.set()
+    server.socket.close()
