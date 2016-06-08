@@ -5,7 +5,7 @@ from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 from os import system
 from threading import Thread, Event
 
-PORT_NUMBER = 7979
+PORT_NUMBER = 7978
 DNS = dict()
 
 UPDATE_PERIOD = 20 # in seconds
@@ -152,6 +152,7 @@ if __name__ == "__main__":
   try:
     server = HTTPServer(('', PORT_NUMBER), RequestHandler)
     loadDNS()
+    updateAlive() # populates alive (because thread first runs updateAlive() UPDATE_PERIOD seconds from start)
     print("Loaded previous DNS configuration")
     print(DNS)
 
