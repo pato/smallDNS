@@ -10,8 +10,9 @@ python dictionary) which stores the mapping from hostnames to IP addresses.
 The server also keeps track of which servers are alive. The values are stored in
 a dictionary that is initialized with values pulled from the DNS map.
 
-A separate thread is started also to update the alive dictionary by pinging the IP's
-in the DNS map. It updates upon creation and then periodically.
+A separate thread is started (runs alongside server.serve_forever) to update the
+alive dictionary by pinging the IP's in the DNS map. It updates upon creation
+and then periodically.
 
 The client scripts ping the server if they notice a change in IP address (either
 from reboot or lease renewal).
