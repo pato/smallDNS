@@ -101,7 +101,7 @@ def strDNS(checkAlive):
   ret = ""
   for hostname, ipaddr in DNS.iteritems():
     if checkAlive:
-      if pingHost(ipaddr):
+      if alive[hostname]:
         ret += ipaddr + "\t" + hostname + "\n"
     else:
         ret += ipaddr + "\t" + hostname + "\n"
