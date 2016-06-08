@@ -137,17 +137,6 @@ def pingHost(ipaddr):
     else:
       return False
 
-"""
-Check which hosts are alive
-"""
-def checkHosts():
-  print("Checking which hosts are alive")
-  for hostname, ipaddr in DNS.iteritems():
-    if pingHost(ipaddr):
-        print(hostname + " is alive!")
-    else:
-        print(hostname + " is dead!")
-
 if __name__ == "__main__":
   try:
     server = HTTPServer(('', PORT_NUMBER), RequestHandler)
