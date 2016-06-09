@@ -68,7 +68,7 @@ class RequestHandler(BaseHTTPRequestHandler):
       self.end_headers()
       self.wfile.write("Updating " + hostname + " to " + ipaddr)
       DNS[hostname] = ipaddr
-      alive[hostname] = thread.updateEntry(hostname, ipaddr)
+      alive[hostname] = True #if it's being added, it's online
       writeDNS()
     return
 
@@ -89,12 +89,6 @@ class AliveUpdaterThread(Thread):
     while not self.stopped.wait(UPDATE_PERIOD):
       updateAlive()
 
-  def updateEntry(self, hostname, ipaddr):
-    if pingHost(ipaddr):
-      alive[hostname] = True
-    else:
-      alive[hostname] = False
-
 """
 Updates alive dict
 Depends on name and IP from DNS
@@ -102,7 +96,7 @@ Depends on name and IP from DNS
 def updateAlive():
   print("updating alive")
   try:
-    for hostname, ipaddr in DNS.copy().iteritems():
+    for hostname, ipaddr in DNS.copy().iteritems(): #copy so it doesn't change size during iteration
       if pingHost(ipaddr):
         alive[hostname] = True
       else:
