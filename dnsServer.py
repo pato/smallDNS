@@ -154,6 +154,7 @@ if __name__ == "__main__":
     stopFlag = Event() #signals a stop for AliveUpdaterThread
 
     thread = AliveUpdaterThread(stopFlag)
+    thread.setDaemon(True)
     thread.start()
 
     print("Started DNS server on port" , PORT_NUMBER)
