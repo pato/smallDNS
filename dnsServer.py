@@ -102,7 +102,7 @@ Depends on name and IP from DNS
 def updateAlive():
   print("updating alive")
   try:
-    for hostname, ipaddr in DNS.iteritems():
+    for hostname, ipaddr in DNS.copy().iteritems():
       if pingHost(ipaddr):
         alive[hostname] = True
       else:
