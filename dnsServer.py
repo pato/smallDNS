@@ -68,7 +68,7 @@ class RequestHandler(BaseHTTPRequestHandler):
       self.end_headers()
       self.wfile.write("Updating " + hostname + " to " + ipaddr)
       DNS[hostname] = ipaddr
-      alive[hostname] = thread.ping(ipaddr)
+      alive[hostname] = thread.updateAlive(hostname, ipaddr)
       writeDNS()
     return
 
@@ -89,8 +89,11 @@ class AliveUpdaterThread(Thread):
     while not self.stopped.wait(UPDATE_PERIOD):
       updateAlive()
 
-  def ping(self, ipaddr):
-    return pingHost(ipaddr)
+  def updateEntry(self, hostname, ipaddr):
+    if pingHost(ipaddr):
+      alive[hostname] = True
+    else:
+      alive[hostname] = False
 
 """
 Updates alive dict
@@ -98,11 +101,15 @@ Depends on name and IP from DNS
 """
 def updateAlive():
   print("updating alive")
-  for hostname, ipaddr in DNS.iteritems():
-    if pingHost(ipaddr):
-      alive[hostname] = True
-    else:
-      alive[hostname] = False
+  try:
+    for hostname, ipaddr in DNS.iteritems():
+      if pingHost(ipaddr):
+        alive[hostname] = True
+      else:
+        alive[hostname] = False
+  except KeyboardInterrupt:
+    print("KeyboardInterrupt recieved!")
+    
 
 
 """
@@ -154,7 +161,7 @@ def loadDNS():
 Check if a host is alive
 """
 def pingHost(ipaddr):
-    print("pinging " + ipaddr + "...",)
+    print("pinging " + ipaddr + "...", end="")
     response = system("ping -c 1 -w 2 " + ipaddr + " > /dev/null")
     if response == 0:
       print(" success.")
