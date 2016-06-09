@@ -68,7 +68,7 @@ class RequestHandler(BaseHTTPRequestHandler):
       self.end_headers()
       self.wfile.write("Updating " + hostname + " to " + ipaddr)
       DNS[hostname] = ipaddr
-      alive[hostname] = thread.updateAlive(hostname, ipaddr)
+      alive[hostname] = thread.updateEntry(hostname, ipaddr)
       writeDNS()
     return
 
@@ -109,7 +109,7 @@ def updateAlive():
         alive[hostname] = False
   except KeyboardInterrupt:
     print("KeyboardInterrupt recieved!")
-    
+
 
 
 """
