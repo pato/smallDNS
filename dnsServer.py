@@ -5,7 +5,7 @@ from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 from os import system
 from threading import Thread, Event
 
-PORT_NUMBER = 7978
+PORT_NUMBER = 7979
 DNS = dict()
 
 UPDATE_PERIOD = 20 # in seconds
