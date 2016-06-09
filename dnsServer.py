@@ -62,6 +62,7 @@ class RequestHandler(BaseHTTPRequestHandler):
       self.end_headers()
       self.wfile.write("Updating " + hostname + " to " + ipaddr)
       DNS[hostname] = ipaddr
+      alive[hostname] = False
       writeDNS()
     return
 
@@ -73,26 +74,27 @@ is set.
 Based on http://stackoverflow.com/a/12435256
 """
 class AliveUpdaterThread(Thread):
-    def __init__(self, event):
-        Thread.__init__(self)
-        self.stopped = event
+  def __init__(self, event):
+    Thread.__init__(self)
+    self.stopped = event
 
-    def run(self):
-        updateAlive() #updates upon thread start
-        while not self.stopped.wait(UPDATE_PERIOD):
-            updateAlive()
+  def run(self):
+    updateAlive() #updates upon thread start
+    while not self.stopped.wait(UPDATE_PERIOD):
+      updateAlive()
 
 """
 Updates alive dict
 Depends on name and IP from DNS
 """
 def updateAlive():
-    print("updating alive")
-    for hostname, ipaddr in DNS.iteritems():
-      if pingHost(ipaddr):
-          alive[hostname] = True
-      else:
-          alive[hostname] = False
+  print("updating alive")
+  for hostname, ipaddr in DNS.iteritems():
+    if pingHost(ipaddr):
+      alive[hostname] = True
+    else:
+      alive[hostname] = False
+
 
 """
 Creates a string representation of the DNS entries
@@ -156,6 +158,7 @@ if __name__ == "__main__":
 
     print("Started DNS server on port" , PORT_NUMBER)
     server.serve_forever()
+
   except KeyboardInterrupt:
     print("^C received, shutting down the web server")
     stopFlag.set()
