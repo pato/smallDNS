@@ -167,7 +167,7 @@ if __name__ == "__main__":
     print("Loaded previous DNS configuration")
     print(DNS)
 
-    #initializes alive with False to prevent KeyError
+    #initializes alive with False to prevent KeyError that would occur between prgm start and alive update
     for hostname, ipaddr in DNS.iteritems():
         alive[hostname] = False
 
