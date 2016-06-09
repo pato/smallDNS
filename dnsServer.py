@@ -49,6 +49,12 @@ class RequestHandler(BaseHTTPRequestHandler):
       self.end_headers()
       self.wfile.write(dumps(DNS))
       return
+    if self.path == "/hostsalivejson":
+      self.send_response(200)
+      self.send_header('Content-type','text/plain')
+      self.end_headers()
+      self.wfile.write(dumps(getFilteredDNS()))
+      return
     if "/" not in self.path or "~" not in self.path:
       self.send_response(400)
       self.send_header("Content-type","text/html")
@@ -62,7 +68,7 @@ class RequestHandler(BaseHTTPRequestHandler):
       self.end_headers()
       self.wfile.write("Updating " + hostname + " to " + ipaddr)
       DNS[hostname] = ipaddr
-      alive[hostname] = False
+      alive[hostname] = thread.ping(ipaddr)
       writeDNS()
     return
 
@@ -82,6 +88,9 @@ class AliveUpdaterThread(Thread):
     updateAlive() #updates upon thread start
     while not self.stopped.wait(UPDATE_PERIOD):
       updateAlive()
+
+  def ping(self, ipaddr):
+    return pingHost(ipaddr)
 
 """
 Updates alive dict
@@ -111,6 +120,17 @@ def strDNS(checkAlive):
   return ret
 
 """
+Returns a filtered DNS list, only those that are alive
+"""
+def getFilteredDNS():
+  ret = dict()
+  for hostname, ipaddr in DNS.iteritems():
+      if alive[hostname]:
+          ret[hostname] = ipaddr
+  return ret
+
+
+"""
 Serialized the current DNS entries as json
 """
 def writeDNS():
@@ -134,10 +154,13 @@ def loadDNS():
 Check if a host is alive
 """
 def pingHost(ipaddr):
+    print("pinging " + ipaddr + "...",)
     response = system("ping -c 1 -w 2 " + ipaddr + " > /dev/null")
     if response == 0:
+      print(" success.")
       return True
     else:
+      print(" failed.")
       return False
 
 if __name__ == "__main__":
