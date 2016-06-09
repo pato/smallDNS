@@ -94,7 +94,6 @@ Updates alive dict
 Depends on name and IP from DNS
 """
 def updateAlive():
-  print("updating alive")
   try:
     for hostname, ipaddr in DNS.copy().iteritems(): #copy so it doesn't change size during iteration
       if pingHost(ipaddr):
@@ -155,13 +154,10 @@ def loadDNS():
 Check if a host is alive
 """
 def pingHost(ipaddr):
-    print("pinging " + ipaddr + "...", end="")
     response = system("ping -c 1 -w 2 " + ipaddr + " > /dev/null")
     if response == 0:
-      print(" success.")
       return True
     else:
-      print(" failed.")
       return False
 
 if __name__ == "__main__":
