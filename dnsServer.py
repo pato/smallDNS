@@ -54,7 +54,9 @@ class RequestHandler(BaseHTTPRequestHandler):
       self.send_header('Access-Control-Allow-Origin', '*')
       self.send_header('Content-type','text/plain')
       self.end_headers()
+      print("beginning to write")
       self.wfile.write(dumps(getFilteredDNS()))
+      print("end write, now returning")
       return
     if "/" not in self.path or "~" not in self.path:
       self.send_response(400)
@@ -155,6 +157,7 @@ def loadDNS():
 Check if a host is alive
 """
 def pingHost(ipaddr):
+    print("pinging "+ipaddr)
     response = system("ping -c 1 -w 2 " + ipaddr + " > /dev/null")
     if response == 0:
       return True
