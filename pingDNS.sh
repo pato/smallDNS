@@ -1,16 +1,16 @@
 #!/bin/bash
 touch .oldIP;
 
-server='localhost'
+server='nixons-head.csres.utexas.edu'
 
-ip=$(ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1 -d'/');
+ip=12341234
 oldip=$(cat .oldIP);
 hostname=$(hostname)
 
 if [ "$ip" == "$oldip" ]; then
   echo "$(date): no ip change";
 else
-  wget -qO- "http://$server:7979/$ip~$hostname" > /dev/null;
+  wget -qO- "http://$server:7978/$ip~$hostname" > /dev/null;
   if [ $? -ne 0 ]; then
     echo "$(date): server is down";
   else
