@@ -17,7 +17,7 @@ var alive map[string]bool;                          // maps hostname to status (
 var pingTicker = time.NewTicker(20 * time.Second)   // time between pings
 var pinger = fastping.NewPinger()                   // pings the IPs
 
-
+var PORT_NUMBER = ":7979"
 
 /*
 request handling functions
@@ -175,5 +175,5 @@ func main() {
   http.HandleFunc("/", ipname)  // catches all other paths
 
   //starts server
-	http.ListenAndServe(":7979", nil)
+  http.ListenAndServe(PORT_NUMBER, nil)
 }
