@@ -5,6 +5,7 @@ import (
   "time"
   "strings"
   "net"
+  "log"
   "net/http"
   "encoding/json"
   "io/ioutil"
@@ -17,7 +18,7 @@ var alive map[string]bool;                          // maps hostname to status (
 var pingTicker = time.NewTicker(20 * time.Second)   // time between pings
 var pinger = fastping.NewPinger()                   // pings the IPs
 
-var PORT_NUMBER = ":7979"
+var PORT_NUMBER = ":7978"
 
 /*
 request handling functions
@@ -45,7 +46,7 @@ func hostsalivejson(w http.ResponseWriter, r *http.Request) {
 
 func ipname(w http.ResponseWriter, r *http.Request) {
   if strings.Contains(r.URL.Path,"~") {
-    fmt.Println(r.URL.Path[1:])
+    fmt.Println(r.RemoteAddr)
     args := strings.Split(r.URL.Path[1:], "~")
     DNS[args[1]] = args[0]
     fmt.Fprintf(w, "Updating " + args[1] + " to " + args[0])
@@ -99,8 +100,8 @@ func lookup(ip string) string {
 //error helper, prints error message if there's an error
 func checkErr(err error, message string) {
   if err != nil {
-    fmt.Printf("Error: %s\n", message);
-    fmt.Println(err)
+    log.Printf("Error: %s\n", message);
+    log.Println(err)
   }
 }
 
@@ -120,6 +121,7 @@ func updateAlive() {
     // reinstantiates the pinger to clear the addresses
     pinger = fastping.NewPinger()
     pinger.Network("udp")
+    //pinger.Debug = true
     pinger.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
       fmt.Printf("IP Addr: %s receive, RTT: %v\n", addr.String(), rtt)
       alive[lookup(addr.String())] = true
@@ -175,5 +177,5 @@ func main() {
   http.HandleFunc("/", ipname)  // catches all other paths
 
   //starts server
-  http.ListenAndServe(PORT_NUMBER, nil)
+  log.Fatal(http.ListenAndServe(PORT_NUMBER, nil))
 }
