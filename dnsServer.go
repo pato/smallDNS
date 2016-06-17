@@ -20,6 +20,8 @@ var pinger = fastping.NewPinger()                   // pings the IPs
 
 var PORT_NUMBER = ":7978"
 
+var DEBUG = false
+
 /*
 request handling functions
 Valid Requests:
@@ -46,7 +48,7 @@ func hostsalivejson(w http.ResponseWriter, r *http.Request) {
 
 func ipname(w http.ResponseWriter, r *http.Request) {
   if strings.Contains(r.URL.Path,"~") {
-    fmt.Println(r.RemoteAddr)
+    debug("IP of request: " + r.RemoteAddr)
     args := strings.Split(r.URL.Path[1:], "~")
     splitIP := strings.Split(r.RemoteAddr, ":")
     requestIP := splitIP[:len(splitIP)-1] //removes what's after the last ':' (done this way bc IP6)
@@ -112,6 +114,12 @@ func checkErr(err error, message string) {
   }
 }
 
+func debug(message string) {
+  if DEBUG {
+    fmt.Println(message)
+  }
+}
+
 ///////////////////
 // alive updater //
 ///////////////////
@@ -130,7 +138,7 @@ func updateAlive() {
     pinger.Network("udp")
     //pinger.Debug = true
     pinger.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
-      fmt.Printf("IP Addr: %s receive, RTT: %v\n", addr.String(), rtt)
+      debug("IP Addr: " + addr.String() + " receive, RTT: " + string(rtt) + "\n")
       alive[lookup(addr.String())] = true
     }
     pinger.OnIdle = func() {
@@ -184,5 +192,6 @@ func main() {
   http.HandleFunc("/", ipname)  // catches all other paths
 
   //starts server
+  fmt.Println("starting server on port " + PORT_NUMBER[1:]) //removes ':'
   log.Fatal(http.ListenAndServe(PORT_NUMBER, nil))
 }
