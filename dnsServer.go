@@ -48,8 +48,13 @@ func ipname(w http.ResponseWriter, r *http.Request) {
   if strings.Contains(r.URL.Path,"~") {
     fmt.Println(r.RemoteAddr)
     args := strings.Split(r.URL.Path[1:], "~")
-    DNS[args[1]] = args[0]
-    fmt.Fprintf(w, "Updating " + args[1] + " to " + args[0])
+    if args[0] == r.RemoteAddr { //if the ip sending the request == the ip part of the requested
+      DNS[args[1]] = args[0]
+      fmt.Fprintf(w, "Updating " + args[1] + " to " + args[0])
+    } else {
+      fmt.Fprintf(w, "Error: the IP being set doesn't match the IP of the client")
+    }
+
   } else {
     fmt.Fprintf(w, "\n\t\tBad Request\n\n\t(did you mean to go to /hosts?)")
   }
