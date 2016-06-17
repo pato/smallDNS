@@ -48,7 +48,9 @@ func ipname(w http.ResponseWriter, r *http.Request) {
   if strings.Contains(r.URL.Path,"~") {
     fmt.Println(r.RemoteAddr)
     args := strings.Split(r.URL.Path[1:], "~")
-    if args[0] == r.RemoteAddr { //if the ip sending the request == the ip part of the requested
+    splitIP := strings.Split(r.RemoteAddr, ":")
+    requestIP := splitIP[:len(splitIP)-1] //removes what's after the last ':' (done this way bc IP6)
+    if args[0] == strings.Join(requestIP, ":") { //if the ip sending the request == the ip part of the requested
       DNS[args[1]] = args[0]
       fmt.Fprintf(w, "Updating " + args[1] + " to " + args[0])
     } else {
