@@ -2,6 +2,7 @@ package main
 
 import (
   "fmt"
+  "flag"
   "time"
   "strings"
   "net"
@@ -18,9 +19,9 @@ var alive map[string]bool;                          // maps hostname to status (
 var pingTicker = time.NewTicker(20 * time.Second)   // time between pings
 var pinger = fastping.NewPinger()                   // pings the IPs
 
-var PORT_NUMBER = ":7978"
+var PORT_NUMBER string
 
-var DEBUG = false
+var DEBUG bool
 
 /*
 request handling functions
@@ -54,6 +55,7 @@ func ipname(w http.ResponseWriter, r *http.Request) {
     requestIP := splitIP[:len(splitIP)-1] //removes what's after the last ':' (done this way bc IP6)
     if args[0] == strings.Join(requestIP, ":") { //if the ip sending the request == the ip part of the requested
       DNS[args[1]] = args[0]
+      writeDNS()
       fmt.Fprintf(w, "Updating " + args[1] + " to " + args[0])
     } else {
       fmt.Fprintf(w, "Error: the IP being set doesn't match the IP of the client")
@@ -162,6 +164,7 @@ func updateAlive() {
 
 // reads a previously saved DNS from disk
 func loadDNS() {
+  debug("reading from .localDNS")
   bytes, err := ioutil.ReadFile(".localDNS")
   checkErr(err, "couldn't read from '.localDNS'")
   err = json.Unmarshal(bytes, &DNS)
@@ -170,6 +173,7 @@ func loadDNS() {
 
 // saves the DNS to disk by marshalling it then writing it to '.localDNS'
 func writeDNS() {
+  debug("writing to .localDNS")
   bytes, err := json.Marshal(DNS)
   checkErr(err, "couldn't marshal the DNS")
   err = ioutil.WriteFile(".localDNS", bytes, 0644)
@@ -178,6 +182,11 @@ func writeDNS() {
 
 
 func main() {
+  //handles flags
+  flag.BoolVar(&DEBUG, "debug", false, "prints debug info (defaults to false)")
+  flag.StringVar(&PORT_NUMBER, "port", "7979", "port number (defaults to 7979)")
+  flag.Parse()
+
   //load DNS from .localDNS
   loadDNS()
 
@@ -192,6 +201,6 @@ func main() {
   http.HandleFunc("/", ipname)  // catches all other paths
 
   //starts server
-  fmt.Println("starting server on port " + PORT_NUMBER[1:]) //removes ':'
-  log.Fatal(http.ListenAndServe(PORT_NUMBER, nil))
+  fmt.Println("starting server on port " + PORT_NUMBER)
+  log.Fatal(http.ListenAndServe(":" + PORT_NUMBER, nil))
 }
