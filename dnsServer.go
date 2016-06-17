@@ -183,8 +183,8 @@ func writeDNS() {
 
 func main() {
   //handles flags
-  flag.BoolVar(&DEBUG, "debug", false, "prints debug info (defaults to false)")
-  flag.StringVar(&PORT_NUMBER, "port", "7979", "port number (defaults to 7979)")
+  flag.BoolVar(&DEBUG, "debug", false, "print debug info")
+  flag.StringVar(&PORT_NUMBER, "port", "7979", "port number")
   flag.Parse()
 
   //load DNS from .localDNS
