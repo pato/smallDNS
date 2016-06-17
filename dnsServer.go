@@ -23,6 +23,8 @@ var PORT_NUMBER string
 
 var DEBUG bool
 
+var UDP bool  //use UDP instead of ICMP
+
 /*
 request handling functions
 Valid Requests:
@@ -137,8 +139,10 @@ func updateAlive() {
 
     // reinstantiates the pinger to clear the addresses
     pinger = fastping.NewPinger()
-    pinger.Network("udp")
-    //pinger.Debug = true
+
+    if UDP {
+      pinger.Network("udp")
+    }
     pinger.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
       debug("IP Addr: " + addr.String() + " receive, RTT: " + string(rtt) + "\n")
       alive[lookup(addr.String())] = true
@@ -184,6 +188,7 @@ func writeDNS() {
 func main() {
   //handles flags
   flag.BoolVar(&DEBUG, "debug", false, "print debug info")
+  flag.BoolVar(&UDP, "udp", false, "ping with UDP instead of ICMP")
   flag.StringVar(&PORT_NUMBER, "port", "7979", "port number")
   flag.Parse()
 
