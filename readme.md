@@ -23,6 +23,12 @@ Requirements:
 * Go (server)
 * Bash, wget (client)
 
+Command Line Arguments:
+* `-debug` prints debug information
+* `-udp` pings with udp instead of icmp (doesn't require root, but doesn't seem to work on linux)
+* `-port <port number>` serves on the specified port (default 7979)
+
+
 Suggested deployment:
 * Run `dnsServer.go` on server
 * Set up cron job to execute `pingDNS.sh` at a reasonable interval (example in `crontab.entry`)

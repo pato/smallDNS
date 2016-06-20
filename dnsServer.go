@@ -20,9 +20,7 @@ var pingTicker = time.NewTicker(20 * time.Second)   // time between pings
 var pinger = fastping.NewPinger()                   // pings the IPs
 
 var PORT_NUMBER string
-
 var DEBUG bool
-
 var UDP bool  //use UDP instead of ICMP
 
 /*
@@ -138,6 +136,7 @@ func updateAlive() {
     alive = make(map[string]bool)
 
     // reinstantiates the pinger to clear the addresses
+    // there is a RemoveAddr(), but no function to list addresses
     pinger = fastping.NewPinger()
 
     if UDP {
