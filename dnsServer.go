@@ -1,27 +1,28 @@
 package main
 
 import (
-  "fmt"
-  "flag"
-  "time"
-  "strings"
-  "net"
-  "log"
-  "net/http"
-  "encoding/json"
-  "io/ioutil"
-  "github.com/tatsushid/go-fastping"
+	"encoding/json"
+	"flag"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"net"
+	"net/http"
+	"strings"
+	"time"
+
+	"github.com/tatsushid/go-fastping"
 )
 
-var DNS map[string]string;                          // maps hostname to IP address
+var dns map[string]string // maps hostname to IP address
 
-var alive map[string]bool;                          // maps hostname to status (true = alive)
-var pingTicker = time.NewTicker(20 * time.Second)   // time between pings
-var pinger = fastping.NewPinger()                   // pings the IPs
+var alive map[string]bool                         // maps hostname to status (true = alive)
+var pingTicker = time.NewTicker(20 * time.Second) // time between pings
+var pinger = fastping.NewPinger()                 // pings the IPs
 
-var PORT_NUMBER string
-var DEBUG bool
-var UDP bool  //use UDP instead of ICMP
+var portNumber string
+var debug bool
+var udp bool //use UDP instead of ICMP
 
 /*
 request handling functions
@@ -32,40 +33,40 @@ Valid Requests:
   /ipaddr~name  update the entry for name with new ipaddr
 */
 func hosts(w http.ResponseWriter, r *http.Request) {
-  fmt.Fprintf(w, prettify(DNS))
+	fmt.Fprintf(w, prettify(DNS))
 }
 
 func hostsalive(w http.ResponseWriter, r *http.Request) {
-  fmt.Fprintf(w, prettify(getFilteredDNS()))
+	fmt.Fprintf(w, prettify(getFilteredDNS()))
 }
 
 func hostsjson(w http.ResponseWriter, r *http.Request) {
-  w.Header().Set("Access-Control-Allow-Origin", "*")
-  fmt.Fprintf(w, jsonify(DNS))
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	fmt.Fprintf(w, jsonify(DNS))
 }
 
 func hostsalivejson(w http.ResponseWriter, r *http.Request) {
-  w.Header().Set("Access-Control-Allow-Origin", "*")
-  fmt.Fprintf(w, jsonify(getFilteredDNS()))
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	fmt.Fprintf(w, jsonify(getFilteredDNS()))
 }
 
 func ipname(w http.ResponseWriter, r *http.Request) {
-  if strings.Contains(r.URL.Path,"~") {
-    debug("IP of request: " + r.RemoteAddr)
-    args := strings.Split(r.URL.Path[1:], "~")
-    splitIP := strings.Split(r.RemoteAddr, ":")
-    requestIP := splitIP[:len(splitIP)-1] //removes what's after the last ':' (done this way bc IP6)
-    if args[0] == strings.Join(requestIP, ":") { //if the ip sending the request == the ip part of the requested
-      DNS[args[1]] = args[0]
-      writeDNS()
-      fmt.Fprintf(w, "Updating " + args[1] + " to " + args[0])
-    } else {
-      fmt.Fprintf(w, "Error: the IP being set doesn't match the IP of the client")
-    }
+	if strings.Contains(r.URL.Path, "~") {
+		pdebug("IP of request: " + r.RemoteAddr)
+		args := strings.Split(r.URL.Path[1:], "~")
+		splitIP := strings.Split(r.RemoteAddr, ":")
+		requestIP := splitIP[:len(splitIP)-1]        //removes what's after the last ':' (done this way bc IP6)
+		if args[0] == strings.Join(requestIP, ":") { //if the ip sending the request == the ip part of the requested
+			DNS[args[1]] = args[0]
+			writeDNS()
+			fmt.Fprintf(w, "Updating "+args[1]+" to "+args[0])
+		} else {
+			fmt.Fprintf(w, "Error: the IP being set doesn't match the IP of the client")
+		}
 
-  } else {
-    fmt.Fprintf(w, "\n\t\tBad Request\n\n\t(did you mean to go to /hosts?)")
-  }
+	} else {
+		fmt.Fprintf(w, "\n\t\tBad Request\n\n\t(did you mean to go to /hosts?)")
+	}
 }
 
 ///////////////////////
@@ -74,54 +75,54 @@ func ipname(w http.ResponseWriter, r *http.Request) {
 
 //converts a DNS-type map into json
 func jsonify(m map[string]string) string {
-  bytes, err := json.Marshal(m)
-  checkErr(err, "couldn't marshal in jsonify")
-  return string(bytes)
+	bytes, err := json.Marshal(m)
+	checkErr(err, "couldn't marshal in jsonify")
+	return string(bytes)
 }
 
 //converts a DNS-type map into a pretty, readable string
 func prettify(m map[string]string) string {
-  ret := ""
-  for hostname, ipaddr := range m {
-    ret += ipaddr + "\t\t" + hostname + "\n"
-  }
-  return ret
+	ret := ""
+	for hostname, ipaddr := range m {
+		ret += ipaddr + "\t\t" + hostname + "\n"
+	}
+	return ret
 }
 
 //returns a filtered DNS: only robots that are alive
 func getFilteredDNS() map[string]string {
-  ret := make(map[string]string)
-  for hostname, ipaddr := range DNS {
-    if alive[hostname] {
-      ret[hostname] = ipaddr
-    }
-  }
-  return ret
+	ret := make(map[string]string)
+	for hostname, ipaddr := range DNS {
+		if alive[hostname] {
+			ret[hostname] = ipaddr
+		}
+	}
+	return ret
 }
 
 //finds key (hostname) given value (ip)
 //assumes alive is one-to-one and onto
 func lookup(ip string) string {
-  for hostname, ipaddr := range DNS {
-    if ip == ipaddr {
-      return hostname
-    }
-  }
-  return "NOT FOUND"
+	for hostname, ipaddr := range DNS {
+		if ip == ipaddr {
+			return hostname
+		}
+	}
+	return "NOT FOUND"
 }
 
 //error helper, prints error message if there's an error
 func checkErr(err error, message string) {
-  if err != nil {
-    log.Printf("Error: %s\n", message);
-    log.Println(err)
-  }
+	if err != nil {
+		log.Printf("Error: %s\n", message)
+		log.Println(err)
+	}
 }
 
-func debug(message string) {
-  if DEBUG {
-    fmt.Println(message)
-  }
+func pdebug(message string) {
+	if debug {
+		fmt.Println(message)
+	}
 }
 
 ///////////////////
@@ -131,36 +132,36 @@ func debug(message string) {
 // periodically updates
 //meant to be run as a goroutine alongside the server
 func updateAlive() {
-  for {
+	for {
 
-    //reinstantiates alive to clear the entries
-    //otherwise, values would stay in forever
-    alive = make(map[string]bool)
+		//reinstantiates alive to clear the entries
+		//otherwise, values would stay in forever
+		alive = make(map[string]bool)
 
-    // reinstantiates the pinger to clear the addresses
-    // there is a RemoveAddr(), but no function to list addresses
-    pinger = fastping.NewPinger()
+		// reinstantiates the pinger to clear the addresses
+		// there is a RemoveAddr(), but no function to list addresses
+		pinger = fastping.NewPinger()
 
-    if UDP {
-      pinger.Network("udp")
-    }
-    pinger.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
-      debug("IP Addr: " + addr.String() + " receive, RTT: " + string(rtt) + "\n")
-      alive[lookup(addr.String())] = true
-    }
-    pinger.OnIdle = func() {
-      //fmt.Println("done pinging")
-    }
+		if UDP {
+			pinger.Network("udp")
+		}
+		pinger.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
+			pdebug("IP Addr: " + addr.String() + " receive, RTT: " + string(rtt) + "\n")
+			alive[lookup(addr.String())] = true
+		}
+		pinger.OnIdle = func() {
+			//fmt.Println("done pinging")
+		}
 
-    // add each ip from DNS as candidate ips that will be pinged
-    for _, ipaddr := range DNS {
-      pinger.AddIP(ipaddr)
-    }
-    err := pinger.Run()
-    checkErr(err, "there was a problem running the pinger")
+		// add each ip from DNS as candidate ips that will be pinged
+		for _, ipaddr := range DNS {
+			pinger.AddIP(ipaddr)
+		}
+		err := pinger.Run()
+		checkErr(err, "there was a problem running the pinger")
 
-    <-pingTicker.C  // waits on ticker
-  }
+		<-pingTicker.C // waits on ticker
+	}
 }
 
 ///////////////////
@@ -169,44 +170,43 @@ func updateAlive() {
 
 // reads a previously saved DNS from disk
 func loadDNS() {
-  debug("reading from .localDNS")
-  bytes, err := ioutil.ReadFile(".localDNS")
-  checkErr(err, "couldn't read from '.localDNS'")
-  err = json.Unmarshal(bytes, &DNS)
-  checkErr(err, "couldn't unmarshal data read from '.localDNS'")
+	pdebug("reading from .localDNS")
+	bytes, err := ioutil.ReadFile(".localDNS")
+	checkErr(err, "couldn't read from '.localDNS'")
+	err = json.Unmarshal(bytes, &DNS)
+	checkErr(err, "couldn't unmarshal data read from '.localDNS'")
 }
 
 // saves the DNS to disk by marshalling it then writing it to '.localDNS'
 func writeDNS() {
-  debug("writing to .localDNS")
-  bytes, err := json.Marshal(DNS)
-  checkErr(err, "couldn't marshal the DNS")
-  err = ioutil.WriteFile(".localDNS", bytes, 0644)
-  checkErr(err, "couldn't write to '.localDNS'")
+	pdebug("writing to .localDNS")
+	bytes, err := json.Marshal(DNS)
+	checkErr(err, "couldn't marshal the DNS")
+	err = ioutil.WriteFile(".localDNS", bytes, 0644)
+	checkErr(err, "couldn't write to '.localDNS'")
 }
 
-
 func main() {
-  //handles flags
-  flag.BoolVar(&DEBUG, "debug", false, "print debug info")
-  flag.BoolVar(&UDP, "udp", false, "ping with UDP instead of ICMP")
-  flag.StringVar(&PORT_NUMBER, "port", "7979", "port number")
-  flag.Parse()
+	//handles flags
+	flag.BoolVar(&debug, "debug", false, "print debug info")
+	flag.BoolVar(&udp, "udp", false, "ping with UDP instead of ICMP")
+	flag.StringVar(&portNumber, "port", "7979", "port number")
+	flag.Parse()
 
-  //load DNS from .localDNS
-  loadDNS()
+	//load DNS from .localDNS
+	loadDNS()
 
-  //start goroutine to update alive
-  go updateAlive()
+	//start goroutine to update alive
+	go updateAlive()
 
-  //map server functions
-  http.HandleFunc("/hosts", hosts)
-  http.HandleFunc("/hostsalive", hostsalive)
-  http.HandleFunc("/hostsjson", hostsjson)
-  http.HandleFunc("/hostsalivejson", hostsalivejson)
-  http.HandleFunc("/", ipname)  // catches all other paths
+	//map server functions
+	http.HandleFunc("/hosts", hosts)
+	http.HandleFunc("/hostsalive", hostsalive)
+	http.HandleFunc("/hostsjson", hostsjson)
+	http.HandleFunc("/hostsalivejson", hostsalivejson)
+	http.HandleFunc("/", ipname) // catches all other paths
 
-  //starts server
-  fmt.Println("starting server on port " + PORT_NUMBER)
-  log.Fatal(http.ListenAndServe(":" + PORT_NUMBER, nil))
+	//starts server
+	fmt.Println("starting server on port " + portNumber)
+	log.Fatal(http.ListenAndServe(":"+portNumber, nil))
 }
